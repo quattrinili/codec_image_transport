@@ -5,43 +5,43 @@
 #include <image_transport/transport_hints.h>
 #include <sensor_msgs/CompressedImage.h>
 
-extern "C"
-{
-#include "libswscale/swscale.h"
+extern "C" {
+#include "libavcodec/avcodec.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mathematics.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
-#include "libavcodec/avcodec.h"
-#include "libavutil/mathematics.h"
 #include "libavutil/samplefmt.h"
+#include "libswscale/swscale.h"
 }
 
 namespace h264_image_transport {
 
-class H264Subscriber : public image_transport::SimpleSubscriberPlugin<sensor_msgs::CompressedImage>
-{
+class H264Subscriber
+    : public image_transport::SimpleSubscriberPlugin< sensor_msgs::CompressedImage > {
 public:
-    H264Subscriber();
-    virtual ~H264Subscriber();
+  H264Subscriber();
+  virtual ~H264Subscriber();
 
-    virtual std::string getTransportName() const
-    {
-        return "h264";
-    }
+  virtual std::string getTransportName() const { return "h264"; }
 
 protected:
-    virtual void internalCallback(const sensor_msgs::CompressedImage::ConstPtr& message, const Callback& user_cb);
-    virtual void subscribeImpl (ros::NodeHandle &nh, const std::string &base_topic, uint32_t queue_size, const Callback &callback, const ros::VoidPtr &tracked_object, const image_transport::TransportHints &transport_hints);
+  virtual void internalCallback(const sensor_msgs::CompressedImage::ConstPtr &message,
+                                const Callback &user_cb);
+  virtual void subscribeImpl(ros::NodeHandle &nh, const std::string &base_topic,
+                             uint32_t queue_size, const Callback &callback,
+                             const ros::VoidPtr &tracked_object,
+                             const image_transport::TransportHints &transport_hints);
 
 private:
-    struct SwsContext *convert_ctx;
+  struct SwsContext *convert_ctx;
 
-    AVCodec *codec;
-    AVCodecContext *c;
-    AVFrame *picture;
-    AVPacket avpkt;
+  AVCodec *codec;
+  AVCodecContext *c;
+  AVFrame *picture;
+  AVPacket avpkt;
 };
 
-};
+}; // namespace h264_image_transport
 
 #endif
