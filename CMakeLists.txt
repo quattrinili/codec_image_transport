@@ -5,12 +5,12 @@ project(h264_image_transport)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  image_transport
-  roscpp
-  std_msgs
   cv_bridge
-  message_generation
+  image_transport
   pluginlib
+  sensor_msgs
+  std_msgs
+  roscpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -47,10 +47,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  H264Packet.msg
-)
+# add_message_files(
+#   FILES
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -67,10 +66,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +103,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES h264_image_transport
-  CATKIN_DEPENDS message_runtime std_msgs pluginlib
+  CATKIN_DEPENDS sensor_msgs pluginlib
 #  DEPENDS system_lib
 )
 

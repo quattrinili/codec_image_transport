@@ -37,7 +37,7 @@ void H264Subscriber::subscribeImpl (ros::NodeHandle &nh, const std::string &base
     SimpleSubscriberPlugin::subscribeImpl(nh, base_topic, queue_size, callback, tracked_object, transport_hints);
 }
 
-void H264Subscriber::internalCallback(const h264_image_transport::H264Packet::ConstPtr& message, const Callback& user_cb)
+void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstPtr& message, const Callback& user_cb)
 {
     avpkt.size = message->data.size();
     avpkt.data = (uint8_t*)&message->data[0];
