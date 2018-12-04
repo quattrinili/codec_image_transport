@@ -34,12 +34,11 @@ protected:
                              const image_transport::TransportHints &transport_hints);
 
 private:
-  struct SwsContext *convert_ctx;
+  void init(ros::NodeHandle nh);
 
-  AVCodec *codec;
-  AVCodecContext *c;
-  AVFrame *picture;
-  AVPacket avpkt;
+private:
+  AVCodecContext *decoder_ctx_;
+  SwsContext *convert_ctx_;
 };
 
 }; // namespace h264_image_transport
