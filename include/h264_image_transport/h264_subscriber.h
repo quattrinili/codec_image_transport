@@ -5,6 +5,8 @@
 #include <image_transport/transport_hints.h>
 #include <sensor_msgs/CompressedImage.h>
 
+#include <boost/shared_ptr.hpp>
+
 extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/imgutils.h>
@@ -37,8 +39,7 @@ private:
   void init(ros::NodeHandle nh);
 
 private:
-  AVCodecContext *decoder_ctx_;
-  SwsContext *convert_ctx_;
+  boost::shared_ptr< AVCodecContext > decoder_ctx_;
 };
 
 }; // namespace h264_image_transport

@@ -17,13 +17,29 @@ extern "C" {
 
 namespace h264_image_transport {
 
-H264Subscriber::H264Subscriber() : decoder_ctx_(NULL), convert_ctx_(NULL) {}
-
-H264Subscriber::~H264Subscriber() {
-  if (decoder_ctx_) {
-    avcodec_free_context(&decoder_ctx_);
+struct AVDeleter {
+  void operator()(AVFrame *frame) {
+    if (frame) {
+      av_frame_free(&frame);
+    }
   }
-}
+
+  void operator()(AVCodecContext *ctx) {
+    if (ctx) {
+      avcodec_free_context(&ctx);
+    }
+  }
+
+  void operator()(SwsContext *ctx) {
+    if (ctx) {
+      sws_freeContext(ctx);
+    }
+  }
+};
+
+H264Subscriber::H264Subscriber() {}
+
+H264Subscriber::~H264Subscriber() {}
 
 void H264Subscriber::init(ros::NodeHandle param_nh) {
   if (decoder_ctx_) {
@@ -41,13 +57,13 @@ void H264Subscriber::init(ros::NodeHandle param_nh) {
   }
 
   // allocate h264 decoder context
-  decoder_ctx_ = avcodec_alloc_context3(decoder);
+  decoder_ctx_.reset(avcodec_alloc_context3(decoder), AVDeleter());
   if (!decoder_ctx_) {
     throw ros::Exception("Cannot allocate h264 decoder context");
   }
 
   // open decoder
-  if (avcodec_open2(decoder_ctx_, decoder, NULL) < 0) {
+  if (avcodec_open2(decoder_ctx_.get(), decoder, NULL) < 0) {
     throw ros::Exception("Failed to open h264 codec");
   }
 }
@@ -64,14 +80,6 @@ void H264Subscriber::subscribeImpl(ros::NodeHandle &nh, const std::string &base_
                                         transport_hints);
 }
 
-struct AVFrameDeleter {
-  void operator()(AVFrame *frame) {
-    if (frame) {
-      av_frame_free(&frame);
-    }
-  }
-};
-
 void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstPtr &message,
                                       const Callback &user_cb) {
   //
@@ -81,21 +89,21 @@ void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstP
   packet.data = (uint8_t *)&message->data[0];
 
   //
-  if (avcodec_send_packet(decoder_ctx_, &packet) < 0) {
+  if (avcodec_send_packet(decoder_ctx_.get(), &packet) < 0) {
     ROS_ERROR("Cannot send h264 packet to decoder");
     return;
   }
 
   while (true) {
     // allocate frame
-    boost::shared_ptr< AVFrame > frame(av_frame_alloc(), AVFrameDeleter());
+    boost::shared_ptr< AVFrame > frame(av_frame_alloc(), AVDeleter());
     if (!frame) {
       ROS_ERROR("Cannot allocate frame");
       return;
     }
 
     // receive frame from the decoder
-    const int res(avcodec_receive_frame(decoder_ctx_, frame.get()));
+    const int res(avcodec_receive_frame(decoder_ctx_.get(), frame.get()));
     if (res == AVERROR(EAGAIN) || res == AVERROR_EOF) {
       // no more frames in the packet
       return;
@@ -114,12 +122,13 @@ void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstP
     out->data.resize(3 * frame->width * frame->height);
 
     // layout data by converting color spaces (YUV -> RGB)
-    convert_ctx_ = sws_getCachedContext(convert_ctx_, frame->width, frame->height,
-                                        AV_PIX_FMT_YUV420P, frame->width, frame->height,
-                                        AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+    boost::shared_ptr< SwsContext > convert_ctx(
+        sws_getContext(frame->width, frame->height, AV_PIX_FMT_YUV420P, frame->width, frame->height,
+                       AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL),
+        AVDeleter());
     int stride = 3 * frame->width;
     uint8_t *dst = &out->data[0];
-    sws_scale(convert_ctx_,
+    sws_scale(convert_ctx.get(),
               // src data
               frame->data, frame->linesize, 0, frame->height,
               // dst data
