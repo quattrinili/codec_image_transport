@@ -17,6 +17,7 @@ extern "C" {
 
 namespace h264_image_transport {
 
+// Deleter for auto free/close of libav objects
 struct AVDeleter {
   void operator()(AVFrame *frame) {
     if (frame) {
@@ -82,33 +83,33 @@ void H264Subscriber::subscribeImpl(ros::NodeHandle &nh, const std::string &base_
 
 void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstPtr &message,
                                       const Callback &user_cb) {
-  //
+  // set packet data from the input message
   AVPacket packet;
   av_init_packet(&packet);
   packet.size = message->data.size();
   packet.data = (uint8_t *)&message->data[0];
 
-  //
+  // send the packet to the decoder
   if (avcodec_send_packet(decoder_ctx_.get(), &packet) < 0) {
     ROS_ERROR("Cannot send h264 packet to decoder");
     return;
   }
 
   while (true) {
-    // allocate frame
+    // allocate a frame for decoded data
     boost::shared_ptr< AVFrame > frame(av_frame_alloc(), AVDeleter());
     if (!frame) {
       ROS_ERROR("Cannot allocate frame");
       return;
     }
 
-    // receive frame from the decoder
+    // receive the decoded data from the decoder
     const int res(avcodec_receive_frame(decoder_ctx_.get(), frame.get()));
     if (res == AVERROR(EAGAIN) || res == AVERROR_EOF) {
       // no more frames in the packet
       return;
     } else if (res < 0) {
-      ROS_ERROR("Cannot decode h264 packet");
+      ROS_ERROR("Cannot receive h264 frame");
       return;
     }
 
@@ -122,10 +123,14 @@ void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstP
     out->data.resize(3 * frame->width * frame->height);
 
     // layout data by converting color spaces (YUV -> RGB)
-    boost::shared_ptr< SwsContext > convert_ctx(
-        sws_getContext(frame->width, frame->height, AV_PIX_FMT_YUV420P, frame->width, frame->height,
-                       AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR, NULL, NULL, NULL),
-        AVDeleter());
+    boost::shared_ptr< SwsContext > convert_ctx(sws_getContext(
+                                                    // src formats
+                                                    frame->width, frame->height, AV_PIX_FMT_YUV420P,
+                                                    // dst formats
+                                                    frame->width, frame->height, AV_PIX_FMT_BGR24,
+                                                    // flags & filters
+                                                    SWS_FAST_BILINEAR, NULL, NULL, NULL),
+                                                AVDeleter());
     int stride = 3 * frame->width;
     uint8_t *dst = &out->data[0];
     sws_scale(convert_ctx.get(),
