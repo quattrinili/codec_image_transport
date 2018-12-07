@@ -51,7 +51,7 @@ void H264Subscriber::init(ros::NodeHandle param_nh) {
   av_log_set_level(AV_LOG_FATAL);
 
   // find h264 decoder
-  AVCodec *const decoder(avcodec_find_decoder_by_name("h264"));
+  AVCodec *const decoder(avcodec_find_decoder(AV_CODEC_ID_H264));
   if (!decoder) {
     throw ros::Exception("Cannot find h264 decoder");
   }
