@@ -138,10 +138,7 @@ target_link_libraries(
   h264_image_transport 
   ${catkin_LIBRARIES} 
   ${OpenCV_LIBRARIES} 
-  x264 
   avcodec 
-  avformat 
-  avutil 
   swscale
 )
 

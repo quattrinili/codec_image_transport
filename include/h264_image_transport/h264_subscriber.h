@@ -9,12 +9,6 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <libavutil/imgutils.h>
-#include <libavutil/mathematics.h>
-#include <libavutil/mem.h>
-#include <libavutil/opt.h>
-#include <libavutil/samplefmt.h>
-#include <libswscale/swscale.h>
 }
 
 namespace h264_image_transport {

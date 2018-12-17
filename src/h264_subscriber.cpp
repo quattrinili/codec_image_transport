@@ -10,9 +10,7 @@
 
 extern "C" {
 #include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libavutil/hwcontext.h>
-#include <libavutil/opt.h>
+#include <libswscale/swscale.h>
 }
 
 namespace h264_image_transport {
@@ -48,7 +46,7 @@ void H264Subscriber::init(ros::NodeHandle param_nh) {
   }
 
   // init libavformat
-  av_register_all();
+  avcodec_register_all();
   av_log_set_level(AV_LOG_FATAL);
 
   // find h264 decoder
