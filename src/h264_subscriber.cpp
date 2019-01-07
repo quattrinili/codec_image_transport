@@ -13,28 +13,20 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-namespace h264_image_transport {
-
 // Deleter for auto free/close of libav objects
-struct AVDeleter {
-  void operator()(AVFrame *frame) {
-    if (frame) {
-      av_frame_free(&frame);
-    }
+void deleteAVFrame(AVFrame *frame) {
+  if (frame) {
+    av_frame_free(&frame);
   }
+}
 
-  void operator()(AVCodecContext *ctx) {
-    if (ctx) {
-      avcodec_free_context(&ctx);
-    }
+void deleteAVCodecContext(AVCodecContext *ctx) {
+  if (ctx) {
+    avcodec_free_context(&ctx);
   }
+}
 
-  void operator()(SwsContext *ctx) {
-    if (ctx) {
-      sws_freeContext(ctx);
-    }
-  }
-};
+namespace h264_image_transport {
 
 H264Subscriber::H264Subscriber() {}
 
@@ -56,7 +48,7 @@ void H264Subscriber::subscribeImpl(ros::NodeHandle &nh, const std::string &base_
     }
 
     // allocate h264 decoder context
-    decoder_ctx_.reset(avcodec_alloc_context3(decoder), AVDeleter());
+    decoder_ctx_.reset(avcodec_alloc_context3(decoder), deleteAVCodecContext);
     if (!decoder_ctx_) {
       throw ros::Exception("Cannot allocate h264 decoder context");
     }
@@ -82,7 +74,7 @@ void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstP
   // repeat decoding until all data in the packet are consumed
   while (packet.size > 0) {
     // decode one frame
-    boost::shared_ptr< AVFrame > frame(av_frame_alloc(), AVDeleter());
+    boost::shared_ptr< AVFrame > frame(av_frame_alloc(), deleteAVFrame);
     int got_frame;
     const int len(avcodec_decode_video2(decoder_ctx_.get(), frame.get(), &got_frame, &packet));
     if (len < 0) {
@@ -110,9 +102,9 @@ void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstP
                                                       frame->width, frame->height, AV_PIX_FMT_BGR24,
                                                       // flags & filters
                                                       SWS_FAST_BILINEAR, NULL, NULL, NULL),
-                                                  AVDeleter());
-      int stride = 3 * frame->width;
-      uint8_t *dst = &out->data[0];
+                                                  sws_freeContext);
+      int stride(out->step);
+      uint8_t *dst(&out->data[0]);
       sws_scale(convert_ctx.get(),
                 // src data
                 frame->data, frame->linesize, 0, frame->height,
