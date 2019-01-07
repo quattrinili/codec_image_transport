@@ -1,14 +1,9 @@
-#include <string>
-
 #include "h264_image_transport/h264_subscriber.h"
 
 #include <ros/console.h>
 #include <ros/exception.h>
-#include <ros/node_handle.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-
-#include <boost/shared_ptr.hpp>
 
 extern "C" {
 #include <libavcodec/avcodec.h>

@@ -1,8 +1,11 @@
 #ifndef H264_IMAGE_TRANSPORT_SUBSCRIBER_H
 #define H264_IMAGE_TRANSPORT_SUBSCRIBER_H
 
+#include <string>
+
 #include <image_transport/simple_subscriber_plugin.h>
 #include <image_transport/transport_hints.h>
+#include <ros/node_handle.h>
 #include <sensor_msgs/CompressedImage.h>
 
 #include <boost/shared_ptr.hpp>
