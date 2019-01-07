@@ -69,7 +69,7 @@ void H264Subscriber::internalCallback(const sensor_msgs::CompressedImage::ConstP
   AVPacket packet;
   av_init_packet(&packet);
   packet.size = message->data.size();
-  packet.data = (uint8_t *)&message->data[0];
+  packet.data = const_cast< uint8_t * >(&message->data[0]);
 
   // send the packet to the decoder
   if (avcodec_send_packet(decoder_ctx_.get(), &packet) < 0) {
