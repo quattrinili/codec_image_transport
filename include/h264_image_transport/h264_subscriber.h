@@ -30,9 +30,6 @@ protected:
                              const image_transport::TransportHints &transport_hints);
 
 private:
-  void init(ros::NodeHandle nh);
-
-private:
   boost::shared_ptr< AVCodecContext > decoder_ctx_;
 };
 
