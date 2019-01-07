@@ -40,39 +40,31 @@ H264Subscriber::H264Subscriber() {}
 
 H264Subscriber::~H264Subscriber() {}
 
-void H264Subscriber::init(ros::NodeHandle param_nh) {
-  if (decoder_ctx_) {
-    return;
-  }
-
-  // init libavformat
-  avcodec_register_all();
-  av_log_set_level(AV_LOG_FATAL);
-
-  // find h264 decoder
-  AVCodec *const decoder(avcodec_find_decoder(AV_CODEC_ID_H264));
-  if (!decoder) {
-    throw ros::Exception("Cannot find h264 decoder");
-  }
-
-  // allocate h264 decoder context
-  decoder_ctx_.reset(avcodec_alloc_context3(decoder), AVDeleter());
-  if (!decoder_ctx_) {
-    throw ros::Exception("Cannot allocate h264 decoder context");
-  }
-
-  // open decoder
-  if (avcodec_open2(decoder_ctx_.get(), decoder, NULL) < 0) {
-    throw ros::Exception("Failed to open h264 codec");
-  }
-}
-
 void H264Subscriber::subscribeImpl(ros::NodeHandle &nh, const std::string &base_topic,
                                    uint32_t queue_size, const Callback &callback,
                                    const ros::VoidPtr &tracked_object,
                                    const image_transport::TransportHints &transport_hints) {
   if (!decoder_ctx_) {
-    init(transport_hints.getParameterNH());
+    // init libavformat
+    avcodec_register_all();
+    av_log_set_level(AV_LOG_FATAL);
+
+    // find h264 decoder
+    AVCodec *const decoder(avcodec_find_decoder(AV_CODEC_ID_H264));
+    if (!decoder) {
+      throw ros::Exception("Cannot find h264 decoder");
+    }
+
+    // allocate h264 decoder context
+    decoder_ctx_.reset(avcodec_alloc_context3(decoder), AVDeleter());
+    if (!decoder_ctx_) {
+      throw ros::Exception("Cannot allocate h264 decoder context");
+    }
+
+    // open decoder
+    if (avcodec_open2(decoder_ctx_.get(), decoder, NULL) < 0) {
+      throw ros::Exception("Failed to open h264 codec");
+    }
   }
 
   SimpleSubscriberPlugin::subscribeImpl(nh, base_topic, queue_size, callback, tracked_object,
