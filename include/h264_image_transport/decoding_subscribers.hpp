@@ -72,13 +72,7 @@ private:
     packet.size = message->data.size();
     packet.data = const_cast< uint8_t * >(&message->data[0]);
 
-    // send the packet to the decoder
-    if (avcodec_send_packet(decoder_ctx_.get(), &packet) < 0) {
-      ROS_ERROR("Cannot send a packet to decoder");
-      return;
-    }
-
-    while (true) {
+    while (packet.size > 0) {
       // allocate a frame for decoded data
       boost::shared_ptr< AVFrame > frame(av_frame_alloc(), deleteAVFrame);
       if (!frame) {
@@ -86,46 +80,51 @@ private:
         return;
       }
 
-      // receive the decoded data from the decoder
-      const int res(avcodec_receive_frame(decoder_ctx_.get(), frame.get()));
-      if (res == AVERROR(EAGAIN) || res == AVERROR_EOF) {
-        // no more frames in the packet
-        return;
-      } else if (res < 0) {
-        ROS_ERROR("Cannot receive a frame");
+      // decode one frame
+      int got_frame;
+      const int len(avcodec_decode_video2(decoder_ctx_.get(), frame.get(), &got_frame, &packet));
+      if (len < 0) {
+        ROS_ERROR("Cannot decode a frame");
         return;
       }
 
-      // allocate output message
-      const sensor_msgs::ImagePtr out(new sensor_msgs::Image());
-      out->header = message->header;
-      out->height = frame->height;
-      out->width = frame->width;
-      out->encoding = sensor_msgs::image_encodings::BGR8;
-      out->step = 3 * frame->width;
-      out->data.resize(3 * frame->width * frame->height);
+      // toss the decoded frame to the user callback
+      if (got_frame > 0) {
+        // allocate output message
+        const sensor_msgs::ImagePtr out(new sensor_msgs::Image());
+        out->header = message->header;
+        out->height = frame->height;
+        out->width = frame->width;
+        out->encoding = sensor_msgs::image_encodings::BGR8;
+        out->step = 3 * frame->width;
+        out->data.resize(3 * frame->width * frame->height);
 
-      // layout data by converting color spaces (YUV -> RGB)
-      boost::shared_ptr< SwsContext > convert_ctx(
-          sws_getContext(
-              // src formats
-              frame->width, frame->height,
-              toUndeprecated(static_cast< AVPixelFormat >(frame->format)),
-              // dst formats
-              frame->width, frame->height, AV_PIX_FMT_BGR24,
-              // flags & filters
-              SWS_FAST_BILINEAR, NULL, NULL, NULL),
-          sws_freeContext);
-      int stride(out->step);
-      uint8_t *dst(&out->data[0]);
-      sws_scale(convert_ctx.get(),
-                // src data
-                frame->data, frame->linesize, 0, frame->height,
-                // dst data
-                &dst, &stride);
+        // layout data by converting color spaces (YUV -> RGB)
+        boost::shared_ptr< SwsContext > convert_ctx(
+            sws_getContext(
+                // src formats
+                frame->width, frame->height,
+                toUndeprecated(static_cast< AVPixelFormat >(frame->format)),
+                // dst formats
+                frame->width, frame->height, AV_PIX_FMT_BGR24,
+                // flags & filters
+                SWS_FAST_BILINEAR, NULL, NULL, NULL),
+            sws_freeContext);
+        int stride(out->step);
+        uint8_t *dst(&out->data[0]);
+        sws_scale(convert_ctx.get(),
+                  // src data
+                  frame->data, frame->linesize, 0, frame->height,
+                  // dst data
+                  &dst, &stride);
 
-      // exec user callback
-      user_cb(out);
+        // exec user callback
+        user_cb(out);
+      }
+
+      // consume data in the packet
+      packet.size -= len;
+      packet.data += len;
     }
   }
 
