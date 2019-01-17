@@ -102,7 +102,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES h264_image_transport
+  LIBRARIES decoding_image_transport
   CATKIN_DEPENDS sensor_msgs pluginlib
 #  DEPENDS system_lib
 )
@@ -120,8 +120,7 @@ include_directories(include
 )
 
 ## Declare a C++ library
-add_library(h264_image_transport
-  src/h264_subscriber.cpp
+add_library(decoding_image_transport
   src/manifest.cpp
 )
 
@@ -129,20 +128,20 @@ add_library(h264_image_transport
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 add_dependencies(
-  h264_image_transport 
+  decoding_image_transport 
   ${${PROJECT_NAME}_EXPORTED_TARGETS} 
   ${catkin_EXPORTED_TARGETS}
 )
 
 target_link_libraries(
-  h264_image_transport 
+  decoding_image_transport 
   ${catkin_LIBRARIES} 
   ${OpenCV_LIBRARIES} 
   avcodec 
   swscale
 )
 
-class_loader_hide_library_symbols(h264_image_transport)
+class_loader_hide_library_symbols(decoding_image_transport)
 
 ## Declare a C++ executable
 # add_executable(h264_image_transport_node src/h264_image_transport_node.cpp)
@@ -171,7 +170,7 @@ class_loader_hide_library_symbols(h264_image_transport)
 # )
 
 ## Mark executables and/or libraries for installation
-install(TARGETS h264_image_transport
+install(TARGETS decoding_image_transport
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -186,7 +185,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
-  h264_plugins.xml
+  decoding_plugins.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
