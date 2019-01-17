@@ -55,6 +55,6 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <image_transport plugin="${prefix}/h264_plugins.xml" />
+    <image_transport plugin="${prefix}/decoding_plugins.xml" />
   </export>
 </package>
