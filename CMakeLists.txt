@@ -5,11 +5,9 @@ project(codec_image_transport)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  cv_bridge
   image_transport
   pluginlib
   sensor_msgs
-  std_msgs
   roscpp
 )
 
@@ -103,7 +101,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES codec_image_transport
-  CATKIN_DEPENDS sensor_msgs pluginlib
+  CATKIN_DEPENDS image_transport sensor_msgs pluginlib roscpp
 #  DEPENDS system_lib
 )
 
