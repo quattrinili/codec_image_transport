@@ -1,5 +1,5 @@
-#ifndef DECODING_IMAGE_TRANSPORT_DECODING_SUBSCRIBERS_HPP
-#define DECODING_IMAGE_TRANSPORT_DECODING_SUBSCRIBERS_HPP
+#ifndef CODEC_IMAGE_TRANSPORT_DECODING_SUBSCRIBERS_HPP
+#define CODEC_IMAGE_TRANSPORT_DECODING_SUBSCRIBERS_HPP
 
 #include <string>
 
@@ -21,7 +21,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-namespace decoding_image_transport {
+namespace codec_image_transport {
 
 template < AVCodecID CodecID, typename TransportName >
 class DecodingSubscriber

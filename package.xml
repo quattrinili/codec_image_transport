@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>decoding_image_transport</name>
+  <name>codec_image_transport</name>
   <version>0.0.0</version>
-  <description>The decoding_image_transport package</description>
+  <description>The codec_image_transport package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -55,6 +55,6 @@
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
-    <image_transport plugin="${prefix}/decoding_plugins.xml" />
+    <image_transport plugin="${prefix}/codec_plugins.xml" />
   </export>
 </package>
