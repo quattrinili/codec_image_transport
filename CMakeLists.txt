@@ -119,7 +119,7 @@ include_directories(include
 
 ## Declare a C++ library
 add_library(codec_image_transport
-  src/manifest.cpp
+  src/codec_image_transport.cpp
 )
 
 ## Add cmake target dependencies of the library
