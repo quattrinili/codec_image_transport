@@ -40,7 +40,6 @@ private:
                              const image_transport::TransportHints &transport_hints) {
     if (!decoder_ctx_) {
       // init libavformat
-      avcodec_register_all();
       av_log_set_level(AV_LOG_FATAL);
 
       // find a decoder
