@@ -166,8 +166,11 @@ private:
   boost::shared_ptr< AVCodecContext > decoder_ctx_;
 };
 
-typedef DecodingSubscriber< AV_CODEC_ID_H264, boost::mpl::string< 'h', '2', '6', '4' > >
+typedef DecodingSubscriber< AV_CODEC_ID_MJPEG, boost::mpl::string< 'h', '2', '6', '4' > >
     H264Subscriber;
+
+typedef DecodingSubscriber< AV_CODEC_ID_MJPEG, boost::mpl::string< 'm', 'j', 'p', 'e', 'g' > >
+   MjpegSubscriber;
 
 } // namespace decoding_image_transport
 

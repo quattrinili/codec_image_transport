@@ -1,7 +1,15 @@
 <library path="lib/libdecoding_image_transport">
-  <class name="image_transport/h264_sub" type="decoding_image_transport::H264Subscriber" base_class_type="image_transport::SubscriberPlugin">
+ 
+ <class name="image_transport/h264_sub" type="decoding_image_transport::H264Subscriber" base_class_type="image_transport::SubscriberPlugin">
     <description>
       This plugin decodes a h264 video stream.
     </description>
   </class>
+
+  <class name="image_transport/mjpeg_sub" type="decoding_image_transport::MjpegSubscriber" base_class_type="image_transport::SubscriberPlugin">
+    <description>
+      This plugin decodes a mjpeg video stream.
+    </description>
+  </class>
+
 </library>

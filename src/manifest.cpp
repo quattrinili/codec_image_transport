@@ -2,3 +2,4 @@
 #include <pluginlib/class_list_macros.h>
 
 PLUGINLIB_EXPORT_CLASS(decoding_image_transport::H264Subscriber, image_transport::SubscriberPlugin);
+PLUGINLIB_EXPORT_CLASS(decoding_image_transport::MjpegSubscriber, image_transport::SubscriberPlugin);
